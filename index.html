@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高齡者智慧陪伴聊天系統 - 介面原型</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* ==========================================================================
+           1. 全局樣式與主題設定（保留暖色調風格）
+           ========================================================================== */
+        :root {
+            --bg-cream: #FDF7F2;       /* 溫慢的米白底色，降低視覺疲勞 */
+            --primary-peach: #E6B9A6;  /* 主色調：粉撲桃色，帶有陪伴的溫暖感 */
+            --accent-apricot: #F4E0D1; /* 輔助色：淺杏色，用於次要元素或提示 */
+            --button-brown: #D38E5A;   /* 按鈕棕色：還原設計圖風格 */
+            --text-dark: #2D241E;      /* 深咖啡色文字，比純黑更溫柔且具高對比度 */
+            --text-muted: #6D5D54;     /* 說明文字的淺咖啡色 */
+            --pure-white: #FFFFFF;
+            --safe-green: #A9C4A2;     /* 衛教/健康提示的安全綠色 */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: "Microsoft JhengHei", -apple-system, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .demo-title {
+            text-align: center;
+            color: var(--text-dark);
+            margin-bottom: 15px;
+            font-size: 28px;
+        }
+        .demo-title p {
+            font-size: 16px;
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+
+        /* ==========================================================================
+           2. 手機外殼 Mockup (符合人機工程學的展示比例)
+           ========================================================================== */
+        .phone-container {
+            width: 390px;
+            height: 800px;
+            background-color: var(--bg-cream);
+            border: 12px solid #2D241E;
+            border-radius: 45px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* 手機頂部聽筒黑條 */
+        .phone-notch {
+            width: 150px;
+            height: 25px;
+            background-color: #2D241E;
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            border-bottom-left-radius: 15px;
+            border-bottom-right-radius: 15px;
+            z-index: 999;
+        }
+
+        /* ==========================================================================
+           3. 通用元件樣式 (核心控制：一次只顯示一個畫面)
+           ========================================================================== */
+
+        .app-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: none; /* 預設全部隱藏 */
+            flex-direction: column;
+        }
+
+        .app-content.active {
+            display: flex;
+        }
+
+        /* 特別放大點擊範圍的防誤觸按鈕（擴展熱區） */
+        .huge-btn {
+            width: 100%;
+            padding: 16px;
+            font-size: 24px; /* 放大字體至 24px */
+            font-weight: bold;
+            border: none;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+        .btn-main { background-color: var(--button-brown); color: var(--pure-white); }
+        .btn-main:active { background-color: #b87543; }
+        
+        .btn-sub { background-color: var(--accent-apricot); color: var(--text-dark); }
+        .btn-sub:active { background-color: #e5ccbc; }
+
+        /* 大文字輸入框 - 強制 24px 大字體 */
+        .huge-input-group {
+            margin-bottom: 25px;
+            width: 100%;
+        }
+        .huge-input-group label {
+            display: block;
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: var(--text-dark);
+        }
+        .huge-input {
+            width: 100%;
+            padding: 16px;
+            font-size: 24px;
+            border: 2px solid var(--primary-peach);
+            border-radius: 12px;
+            background-color: var(--pure-white);
+            color: var(--text-dark);
+            outline: none;
+        }
+
+        /* 底部導覽列 (精簡為 3 個選項) */
+        .app-nav {
+            height: 85px;
+            background-color: var(--pure-white);
+            border-top: 2px solid var(--accent-apricot);
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            padding: 5px 0 15px 0;
+            z-index: 900;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: bold;
+            gap: 4px;
+        }
+        .nav-item i {
+            font-size: 26px;
+        }
+        .nav-item.active {
+            color: var(--button-brown);
+        }
+
+        .persona-headline {
+            font-size: 26px;
+            font-weight: bold;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+            flex-shrink: 0;
+            text-align: center;
+        }
+        .persona-subheadline {
+            font-size: 18px;
+            color: var(--text-muted);
+            margin-bottom: 25px;
+            flex-shrink: 0;
+            text-align: center;
+        }
+
+        /* ==========================================================================
+           4. 高齡友善登入成功 / 緊急求助彈窗 (Modal) 樣式
+           ========================================================================== */
+        .modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.45);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+        .modal-box {
+            background: var(--pure-white);
+            width: 100%;
+            padding: 30px 20px;
+            border-radius: 28px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border: 3px solid var(--primary-peach);
+            animation: popIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .modal-icon {
+            font-size: 60px;
+            color: #88C057;
+            margin-bottom: 15px;
+        }
+        .modal-icon-emergency {
+            font-size: 65px;
+            color: #E27373;
+            margin-bottom: 15px;
+            animation: pulse 1.5s infinite;
+        }
+        .modal-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--text-dark);
+            margin-bottom: 10px;
+        }
+        .modal-desc {
+            font-size: 20px;
+            color: var(--text-muted);
+            margin-bottom: 25px;
+            line-height: 1.4;
+        }
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* ==========================================================================
+           5. 核心對話室與新版大輸入框樣式
+           ========================================================================== */
+        #screen-login {
+            justify-content: center;
+            align-items: center;
+            padding-top: 40px;
+        }
+        .brand-logo {
+            text-align: center;
+            margin-bottom: 45px;
+        }
+        .brand-logo i {
+            font-size: 95px;
+            color: var(--button-brown);
+            margin-bottom: 20px;
+        }
+        .brand-logo h2 {
+            font-size: 32px;
+            color: var(--text-dark);
+        }
+
+        #screen-chat, #screen-tools, #screen-resources, #screen-breathing, #screen-finger-exercise, #screen-article-hypertension, #screen-article-fall-prevention {
+            padding-top: 45px;
+        }
+
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            flex: 1;
+            overflow: hidden;
+        }
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding-bottom: 15px;
+        }
+        .msg-bubble {
+            max-width: 88%;
+            padding: 16px 20px;
+            border-radius: 20px;
+            font-size: 24px; /* 對話文字 24px */
+            line-height: 1.5;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            word-break: break-all;
+        }
+        .msg-bot {
+            background-color: var(--pure-white);
+            color: var(--text-dark);
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+            border: 1px solid var(--accent-apricot);
+        }
+        .msg-user {
+            background-color: var(--button-brown);
+            color: var(--pure-white);
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+        .thinking-indicator {
+            font-size: 18px;
+            color: var(--text-muted);
+            margin-left: 10px;
+            font-style: italic;
+            display: none;
+            margin-bottom: 10px;
+        }
+
+        /* 大畫布輸入區 */
+        .chat-input-area {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: transparent;
+            padding-top: 10px;
+            flex-shrink: 0;
+        }
+        .huge-textarea {
+            width: 100%;
+            height: 130px; /* 大對話框 */
+            padding: 16px;
+            font-size: 24px; /* 輸入文字 24px */
+            border: 2px solid #D1C5C0;
+            border-radius: 20px;
+            background-color: var(--pure-white);
+            color: var(--text-dark);
+            outline: none;
+            resize: none;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .huge-textarea::placeholder {
+            color: #A0938E;
+        }
+
+        /* 傳送按鈕與右側語音按鈕組合列 */
+        .chat-btn-row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        .send-btn-large {
+            flex: 1;
+            margin-bottom: 0;
+            padding: 16px;
+            font-size: 24px;
+            border-radius: 16px;
+            background-color: var(--button-brown);
+            color: var(--pure-white);
+        }
+        .chat-mic-btn-large {
+            width: 65px;
+            height: 62px;
+            border-radius: 16px;
+            background-color: var(--accent-apricot);
+            color: var(--text-dark);
+            border: none;
+            font-size: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .chat-mic-btn-large.recording {
+            background-color: #E27373;
+            color: var(--pure-white);
+            animation: micPulse 1.5s infinite;
+        }
+        @keyframes micPulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
+
+        /* 放鬆小幫手改為單欄大按鈕設計（2個選項） */
+        .tool-single-column {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-top: 15px;
+        }
+        .tool-card-large {
+            background: var(--pure-white);
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.03);
+            border: 2px solid transparent;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        .tool-card-large:active { border-color: var(--button-brown); }
+        .tool-card-large i { font-size: 50px; color: var(--button-brown); }
+        
+        .resource-item {
+            background: var(--pure-white);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 6px solid var(--safe-green);
+            cursor: pointer;
+        }
+        .resource-item:active {
+            background-color: #f7f0ea;
+        }
+        .btn-emergency {
+            background-color: #E27373;
+            color: white;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        .breath-container {
+            box-content: border-box;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding-bottom: 50px;
+        }
+        .breath-circle {
+            width: 170px;
+            height: 170px;
+            border-radius: 50%;
+            background-color: var(--button-brown);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--pure-white);
+            font-size: 32px;
+            font-weight: bold;
+            box-shadow: 0 10px 25px rgba(211,142,90,0.4);
+            transition: transform 3s ease-in-out;
+            margin-bottom: 35px;
+        }
+        .breath-circle.expand { transform: scale(1.35); background-color: #EFA889; }
+        .breath-circle.shrink { transform: scale(0.9); background-color: var(--button-brown); }
+
+        .exercise-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding-bottom: 30px;
+        }
+        .exercise-visual-box {
+            width: 200px;
+            height: 200px;
+            border-radius: 30px;
+            background-color: var(--pure-white);
+            border: 4px solid var(--accent-apricot);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 90px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.03);
+            margin-bottom: 30px;
+        }
+        .exercise-timer-text {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--button-brown);
+            background-color: var(--pure-white);
+            padding: 6px 18px;
+            border-radius: 20px;
+            border: 1px solid var(--button-brown);
+            margin-bottom: 10px;
+        }
+
+        /* 文章內容內頁高齡友善排版 */
+        .article-card {
+            background: var(--pure-white);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.03);
+        }
+        .article-card h3 {
+            font-size: 22px;
+            color: var(--button-brown);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .article-card p, .article-card li {
+            font-size: 18px;
+            color: var(--text-dark);
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+        .article-card ul {
+            padding-left: 20px;
+        }
+        .article-img-box {
+            width: 100%;
+            height: 160px;
+            background-color: var(--bg-cream);
+            border: 2px dashed var(--primary-peach);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            margin: 12px 0;
+            font-size: 16px;
+            gap: 6px;
+        }
+        .article-img-box i {
+            font-size: 38px;
+            color: var(--button-brown);
+        }
+    </style>
+</head>
+<body>
+
+    <h1 class="demo-title">
+        高齡者智慧陪伴聊天室
+    </h1>
+
+    <div class="phone-container">
+        <div class="phone-notch"></div>
+
+        <!-- 介面 1：歡迎登入閘道 -->
+        <div id="screen-login" class="app-content active">
+            <div class="brand-logo">
+                <i class="fa-solid fa-heart-pulse"></i>
+                <h2>智慧陪伴空間</h2>
+                <p style="font-size: 18px; color: var(--text-muted); margin-top: 6px;">歡迎回家，讓我們陪你聊聊天</p>
+            </div>
+            
+            <div class="huge-input-group">
+                <label><i class="fa-solid fa-user"></i> 請輸入電話號碼</label>
+                <input type="tel" class="huge-input" id="login-phone-field" placeholder="請輸入 10 位數手機號碼" maxlength="10">
+            </div>
+            
+            <button class="huge-btn btn-main" style="margin-bottom: 0;" onclick="handleShowLoginModal()">
+                登入 <i class="fa-solid fa-arrow-right"></i>
+            </button>
+            
+            <p style="text-align: center; font-size: 16px; color: var(--text-muted); margin-top: 30px;">
+                <i class="fa-solid fa-shield-halved"></i> 您的隱私與對話已受安全保護
+            </p>
+        </div>
+
+        <!-- 介面 2：核心智慧對話室 -->
+        <div id="screen-chat" class="app-content">
+            <div class="persona-headline" id="chat-title-name">智慧陪伴聊天室</div>
+
+            <div class="chat-container">
+                <div class="chat-messages" id="chat-box"></div>
+                
+                <div class="thinking-indicator" id="robot-thinking">
+                    <i class="fa-solid fa-circle-notch fa-spin"></i> 夥伴正在想下一句話..
+                </div>
+
+                <div class="chat-input-area">
+                    <textarea id="chat-input-field" class="huge-textarea" placeholder="請輸入想說的話..." onkeypress="handleKeyPress(event)"></textarea>
+                    
+                    <div class="chat-btn-row">
+                        <button class="huge-btn btn-main send-btn-large" onclick="processUserMessage()">
+                            傳送
+                        </button>
+                        <button class="chat-mic-btn-large" id="voice-mic-trigger" onclick="toggleVoiceRecognition()" title="語音輸入">
+                            <i class="fa-solid fa-microphone"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 介面 3：即時正念舒壓工具 -->
+        <div id="screen-tools" class="app-content">
+            <div class="persona-headline">舒壓放鬆小幫手</div>
+            <div class="persona-subheadline">覺得緊繃或想活動筋骨嗎？試試看以下小工具：</div>
+
+            <div class="tool-single-column">
+                <div class="tool-card-large" onclick="openBreathingGuide()">
+                    <i class="fa-solid fa-wind"></i>
+                    <h4 style="font-size: 24px; color: var(--text-dark);">跟著吸吐氣</h4>
+                    <p style="font-size: 16px; color: var(--text-muted);">調節呼吸，放鬆心情</p>
+                </div>
+                <div class="tool-card-large" onclick="openFingerExerciseGuide()">
+                    <i class="fa-solid fa-hand-holding-heart"></i>
+                    <h4 style="font-size: 24px; color: var(--text-dark);">手指動一動</h4>
+                    <p style="font-size: 16px; color: var(--text-muted);">活化大腦與末梢血液循環</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 介面 4：長者呼吸引導功能 -->
+        <div id="screen-breathing" class="app-content">
+            <button class="huge-btn btn-sub" style="margin-bottom: 25px; padding: 12px;" onclick="closeSubScreen('screen-tools')">
+                <i class="fa-solid fa-arrow-left"></i> 返回放輕鬆小幫手
+            </button>
+
+            <div class="persona-headline" style="text-align: center;">長者健康呼引導</div>
+            <div class="persona-subheadline" style="text-align: center; margin-bottom: 40px;">請跟著圓圈的縮放，放慢您的呼吸節奏：</div>
+
+            <div class="breath-container">
+                <div class="breath-circle shrink" id="breathing-node">吸氣</div>
+                <p id="breath-hint-text" style="font-size: 24px; font-weight: bold; color: var(--text-dark); letter-spacing: 1px;">準備開始...</p>
+            </div>
+        </div>
+
+        <!-- 介面 5：簡易手指防失智伸展操運動 -->
+        <div id="screen-finger-exercise" class="app-content">
+            <button class="huge-btn btn-sub" style="margin-bottom: 25px; padding: 12px;" onclick="closeSubScreen('screen-tools')">
+                <i class="fa-solid fa-arrow-left"></i> 返回放輕鬆小幫手
+            </button>
+
+            <div class="persona-headline" style="text-align: center;">活腦手指伸展操</div>
+            <div class="persona-subheadline" style="text-align: center; margin-bottom: 30px;">請看著下方圖示，跟著節奏活動雙手：</div>
+
+            <div class="exercise-container">
+                <div class="exercise-timer-text" id="exercise-timer-node">剩餘 4 秒</div>
+                
+                <div class="exercise-visual-box" id="exercise-emoji-node">✊</div>
+                
+                <h2 id="exercise-instruction-node" style="color: var(--text-dark); font-size: 28px; font-weight: bold; margin-bottom: 10px;">第一步：雙手用力握拳</h2>
+                <p id="exercise-tip-node" style="color: var(--text-muted); font-size: 20px;">維持姿勢，活化大腦神經</p>
+            </div>
+        </div>
+
+        <!-- 介面 6：健康衛教與緊急資源中心 -->
+        <div id="screen-resources" class="app-content">
+            <div class="persona-headline">健康衛教與尋求協助</div>
+            <div class="persona-subheadline">這裡提供最安全的居家保障與精準衛教常識：</div>
+
+            <!-- 點擊觸發緊急求助彈窗 -->
+            <button class="huge-btn btn-emergency" onclick="handleShowEmergencyModal()">
+                <i class="fa-solid fa-phone-flip"></i> 點此撥打緊急電話
+            </button>
+
+            <h3 style="color: var(--text-dark); margin: 25px 0 12px 0; font-size: 22px;">本日推薦衛教庫</h3>
+
+            <!-- 點擊進入高血壓文章 -->
+            <div class="resource-item" onclick="navigateToScreen('screen-article-hypertension')">
+                <div>
+                    <h4 style="color: var(--text-dark); font-size: 20px;">🩸 高血壓春季保養指南</h4>
+                    <p style="color: var(--text-muted); font-size: 16px; margin-top: 4px;">點擊閱讀：預防與飲食注意事項</p>
+                </div>
+                <i class="fa-solid fa-chevron-right" style="color: var(--text-muted); font-size:20px;"></i>
+            </div>
+
+            <!-- 點擊進入防跌文章 -->
+            <div class="resource-item" onclick="navigateToScreen('screen-article-fall-prevention')">
+                <div>
+                    <h4 style="color: var(--text-dark); font-size: 20px;">🧘‍♂️ 長者居家防跌小運動</h4>
+                    <p style="color: var(--text-muted); font-size: 16px; margin-top: 4px;">點擊閱讀：客廳就能做的 5 種椅子伸展操</p>
+                </div>
+                <i class="fa-solid fa-chevron-right" style="color: var(--text-muted); font-size:20px;"></i>
+            </div>
+        </div>
+
+        <!-- 文章內頁 1：高血壓春季保養指南 -->
+        <div id="screen-article-hypertension" class="app-content">
+            <button class="huge-btn btn-sub" style="margin-bottom: 20px; padding: 12px;" onclick="navigateToScreen('screen-resources')">
+                <i class="fa-solid fa-arrow-left"></i> 返回健康衛教列表
+            </button>
+
+            <div class="persona-headline" style="text-align: left; font-size: 24px;">🩸 高血壓春季保養指南</div>
+            <p style="font-size: 16px; color: var(--text-muted); margin-bottom: 20px;"><i class="fa-solid fa-user-doctor"></i> 專業醫師審查 | 春季氣溫多變專刊</p>
+
+            <div class="article-card">
+                <h3><i class="fa-solid fa-triangle-exclamation"></i> 為什麼春季容易血壓波動？</h3>
+                <p>春季氣溫忽冷忽熱，血管容易跟著收縮，導致血壓容易上下起伏。長者們在這個季節一定要特別注意保暖與血壓量測。</p>
+            </div>
+
+            <div class="article-card">
+                <h3><i class="fa-solid fa-shield-heart"></i> 如何預防春季高血壓？</h3>
+                <ul>
+                    <li><strong>定時量血壓：</strong>每天早晚固定量測一次並記錄。</li>
+                    <li><strong>注意頭頸保暖：</strong>早晚溫差大時，出門記得戴帽子或圍巾。</li>
+                    <li><strong>情緒保持平穩：</strong>避免激動或過度勞累。</li>
+                </ul>
+                <div class="article-img-box">
+                    <i class="fa-solid fa-heart-pulse"></i>
+                    <span>[圖示：早晚定時量血壓與保暖示意圖]</span>
+                </div>
+            </div>
+
+            <div class="article-card">
+                <h3><i class="fa-solid fa-utensils"></i> 飲食注意事項</h3>
+                <ul>
+                    <li><strong>減鹽少油：</strong>每日鹽分攝取量控制在 6 克以下。</li>
+                    <li><strong>多吃高鉀蔬果：</strong>如香蕉、菠菜，有助於排出體內多餘鈉離子。</li>
+                    <li><strong>溫開水代替含糖飲料：</strong>維持血液循環順暢。</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 文章內頁 2：長者居家防跌小運動 (5種椅子伸展操) -->
+        <div id="screen-article-fall-prevention" class="app-content">
+            <button class="huge-btn btn-sub" style="margin-bottom: 20px; padding: 12px;" onclick="navigateToScreen('screen-resources')">
+                <i class="fa-solid fa-arrow-left"></i> 返回健康衛教列表
+            </button>
+
+            <div class="persona-headline" style="text-align: left; font-size: 24px;">🧘‍♂️ 長者居家防跌小運動</div>
+            <p style="font-size: 16px; color: var(--text-muted); margin-bottom: 20px;"><i class="fa-solid fa-dumbbell"></i> 復健科推薦 | 適合在客廳看電視時跟著做</p>
+
+            <div class="article-card">
+                <h3>1. 椅子坐立運動（強化大腿肌力）</h3>
+                <p>坐在穩固的椅子前端，雙腳張開與肩同寬，身體微微前傾站起，再緩慢坐下。重複 10 次。</p>
+                <div class="article-img-box">
+                    <i class="fa-solid fa-person-arrow-up-from-line"></i>
+                    <span>[圖示：坐在椅子上起立與坐下動作]</span>
+                </div>
+            </div>
+
+            <div class="article-card">
+                <h3>2. 單足站立平衡（訓練核心與平衡）</h3>
+                <p>手扶著椅背，單腳站立維持 10 秒，再換腳。能有效預防跌倒風險。</p>
+                <div class="article-img-box">
+                    <i class="fa-solid fa-child-reaching"></i>
+                    <span>[圖示：扶椅背單腳站立平衡練習]</span>
+                </div>
+            </div>
+
+            <div class="article-card">
+                <h3>3. 腳踝幫浦運動（促進下肢循環）</h3>
+                <p>坐在椅子上，將雙腳伸直，腳尖上下勾動。每次做 20 下，預防腳部水腫與僵硬。</p>
+                <div class="article-img-box">
+                    <i class="fa-solid fa-shoe-prints"></i>
+                    <span>[圖示：坐姿腳踝上下勾動伸展]</span>
+                </div>
+            </div>
+
+            <div class="article-card">
+                <h3>4. 坐姿膝蓋伸展（強化膝關節周圍肌群）</h3>
+                <p>坐在椅子上，將單腳慢慢向前伸直並打平，維持 5 秒後放下，換腳做。重複 10 次。</p>
+                <div class="article-img-box">
+                    <i class="fa-solid fa-angles-right"></i>
+                    <span>[圖示：坐姿單腳向前伸直抬高]</span>
+                </div>
+            </div>
+
+            <div class="article-card">
+                <h3>5. 上肢擴胸運動（放鬆肩頸與改善駝背）</h3>
+                <p>坐在椅子上挺胸，雙手向後擴胸並深呼吸，伸展胸口與肩膀。維持 5 秒，重複 5 次。</p>
+                <div class="article-img-box">
+                    <i class="fa-solid fa-hands-holding"></i>
+                    <span>[圖示：坐姿擴胸與深呼吸伸展]</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 登入成功 Modal 視窗 -->
+        <div id="login-success-modal" class="modal-overlay">
+            <div class="modal-box">
+                <div class="modal-icon">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+                <div class="modal-title">🎉 登入成功！</div>
+                <div class="modal-desc">歡迎回到智慧陪伴空間，讓我們陪您聊聊天。</div>
+                <button class="huge-btn btn-main" style="margin-bottom:0; padding:14px;" onclick="closeModalAndGoChat()">
+                    開啟聊天室 <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- 緊急求助撥打確認 Modal 視窗 -->
+        <div id="emergency-modal" class="modal-overlay">
+            <div class="modal-box" style="border-color: #E27373;">
+                <div class="modal-icon-emergency">
+                    <i class="fa-solid fa-phone-volume"></i>
+                </div>
+                <div class="modal-title" style="color: #E27373;">🚨 緊急求助機制</div>
+                <div class="modal-desc">正在啟動安全機制：<br><strong>即時撥打給您的設定緊急聯絡人（家屬/社區志工中心）</strong></div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="huge-btn btn-sub" style="flex: 1; margin-bottom: 0; padding: 12px; font-size: 20px;" onclick="closeEmergencyModal()">
+                        取消
+                    </button>
+                    <button class="huge-btn" style="flex: 1; margin-bottom: 0; padding: 12px; font-size: 20px; background-color: #E27373; color: white;" onclick="confirmEmergencyCall()">
+                        確認撥打
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 固定底部導覽列 -->
+        <div class="app-nav" id="main-nav" style="display: none;">
+            <div class="nav-item active" id="nav-chat" onclick="switchTab('screen-chat', this)">
+                <i class="fa-solid fa-comments"></i>
+                <span>天天聊</span>
+            </div>
+            <div class="nav-item" id="nav-tools" onclick="switchTab('screen-tools', this)">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <span>放輕鬆</span>
+            </div>
+            <div class="nav-item" id="nav-resources" onclick="switchTab('screen-resources', this)">
+                <i class="fa-solid fa-heart"></i>
+                <span>找健康</span>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ==========================================================================
+         6. 動態互動 JavaScript
+         ========================================================================== -->
+    <script>
+        let recognition = null;
+        let isRecording = false;
+        let breathTimer = null;
+        let exerciseTimer = null;
+
+        function handleShowLoginModal() {
+            const phoneInput = document.getElementById('login-phone-field').value.trim();
+            const phoneRegex = /^09\d{8}$/;
+
+            if (!phoneRegex.test(phoneInput)) {
+                alert("⚠️ 請輸入正確的 10 位數手機號碼（例如：0912345678）！");
+                return;
+            }
+
+            document.getElementById('login-success-modal').style.display = 'flex';
+        }
+
+        function closeModalAndGoChat() {
+            document.getElementById('login-success-modal').style.display = 'none';
+            navigateToScreen('screen-chat');
+            document.getElementById('main-nav').style.display = 'grid';
+            initAutoGreeting();
+        }
+
+        /* 緊急求助彈窗控制邏輯 */
+        function handleShowEmergencyModal() {
+            document.getElementById('emergency-modal').style.display = 'flex';
+        }
+
+        function closeEmergencyModal() {
+            document.getElementById('emergency-modal').style.display = 'none';
+        }
+
+        function confirmEmergencyCall() {
+            alert("📞 已成功發送求助訊號，正在為您接通緊急聯絡人（家屬/社區志工中心），請保持電話暢通！");
+            closeEmergencyModal();
+        }
+
+        function initAutoGreeting() {
+            const chatBox = document.getElementById('chat-box');
+            chatBox.innerHTML = "";
+
+            const initialBotMsg = document.createElement('div');
+            initialBotMsg.className = 'msg-bubble msg-bot';
+            initialBotMsg.innerText = "您好呀！歡迎回到智慧陪伴空間。今天過得怎麼樣？身體感覺還舒服嗎？";
+            
+            chatBox.appendChild(initialBotMsg);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function navigateToScreen(screenId) {
+            const screens = document.querySelectorAll('.app-content');
+            screens.forEach(s => {
+                s.classList.remove('active');
+                s.style.display = 'none';
+            });
+            
+            const targetScreen = document.getElementById(screenId);
+            if (targetScreen) {
+                targetScreen.classList.add('active');
+                targetScreen.style.display = 'flex';
+            }
+        }
+
+        function closeSubScreen(returnScreenId) {
+            if (breathTimer) { clearInterval(breathTimer); breathTimer = null; }
+            if (exerciseTimer) { clearInterval(exerciseTimer); exerciseTimer = null; }
+            navigateToScreen(returnScreenId);
+            document.getElementById('main-nav').style.display = 'grid';
+        }
+
+        /* 呼吸引導邏輯 */
+        function openBreathingGuide() {
+            navigateToScreen('screen-breathing');
+            document.getElementById('main-nav').style.display = 'none';
+            const circleNode = document.getElementById('breathing-node');
+            const hintText = document.getElementById('breath-hint-text');
+            let step = 0;
+            function runBreathCycle() {
+                if (step % 2 === 0) {
+                    circleNode.innerText = "吸氣";
+                    circleNode.className = "breath-circle expand";
+                    hintText.innerText = "慢慢吸氣... 肚子挺起來";
+                    hintText.style.color = "#EFA889";
+                } else {
+                    circleNode.innerText = "吐氣";
+                    circleNode.className = "breath-circle shrink";
+                    hintText.innerText = "緩緩吐氣... 把煩惱吐掉";
+                    hintText.style.color = "var(--button-brown)";
+                }
+                step++;
+            }
+            runBreathCycle();
+            breathTimer = setInterval(runBreathCycle, 3000);
+        }
+
+        /* 手指防失智伸展操引導邏輯 */
+        function openFingerExerciseGuide() {
+            navigateToScreen('screen-finger-exercise');
+            document.getElementById('main-nav').style.display = 'none';
+
+            const emojiNode = document.getElementById('exercise-emoji-node');
+            const instructionNode = document.getElementById('exercise-instruction-node');
+            const tipNode = document.getElementById('exercise-tip-node');
+            const timerNode = document.getElementById('exercise-timer-node');
+
+            const stepsData = [
+                { emoji: "✊", text: "第一步：雙手用力握拳", tip: "維持姿勢，活化手指微血管", seconds: 4 },
+                { emoji: "🖐️", text: "第二步：十指完全張開", tip: "盡量張到最大，拉伸手掌肌肉", seconds: 4 },
+                { emoji: "🤝", text: "第三步：雙手用力互壓", tip: "雙手對壓，刺激左右大腦皮質", seconds: 4 }
+            ];
+
+            let currentStepIndex = 0;
+            let timeLeft = stepsData[currentStepIndex].seconds;
+
+            exerciseTimer = setInterval(() => {
+                timeLeft--;
+                if (timeLeft <= 0) {
+                    currentStepIndex = (currentStepIndex + 1) % stepsData.length;
+                    timeLeft = stepsData[currentStepIndex].seconds;
+                }
+                
+                timerNode.innerText = `剩餘 ${timeLeft} 秒`;
+                emojiNode.innerText = stepsData[currentStepIndex].emoji;
+                instructionNode.innerText = stepsData[currentStepIndex].text;
+                tipNode.innerText = stepsData[currentStepIndex].tip;
+            }, 1000);
+        }
+
+        // 語音辨識 API
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'zh-TW';
+
+            recognition.onresult = function(event) {
+                const speechToTextResult = event.results[0][0].transcript;
+                const inputField = document.getElementById('chat-input-field');
+                inputField.value = speechToTextResult;
+                setTimeout(() => { processUserMessage(); }, 500);
+            };
+
+            recognition.onend = function() { stopRecordingStyle(); };
+            recognition.onerror = function(event) {
+                console.error("語音辨識出錯:", event.error);
+                stopRecordingStyle();
+            };
+        }
+
+        function toggleVoiceRecognition() {
+            if (!recognition) {
+                alert("您的瀏覽器不支援內建語音辨識，將切換為純文字輸入。");
+                return;
+            }
+            const micBtn = document.getElementById('voice-mic-trigger');
+            const inputField = document.getElementById('chat-input-field');
+
+            if (!isRecording) {
+                try {
+                    recognition.start();
+                    isRecording = true;
+                    micBtn.classList.add('recording');
+                    inputField.placeholder = "🎙️ 正在聽您說話...";
+                    inputField.style.backgroundColor = "#FFF5F5";
+                } catch (e) { console.error(e); }
+            } else {
+                recognition.stop();
+                stopRecordingStyle();
+            }
+        }
+
+        function stopRecordingStyle() {
+            isRecording = false;
+            const micBtn = document.getElementById('voice-mic-trigger');
+            const inputField = document.getElementById('chat-input-field');
+            if(micBtn && inputField) {
+                micBtn.classList.remove('recording');
+                inputField.placeholder = "請輸入想說的話...";
+                inputField.style.backgroundColor = "var(--pure-white)";
+            }
+        }
+
+        function switchTab(screenId, navItem) {
+            navigateToScreen(screenId);
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            navItem.classList.add('active');
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) { 
+                event.preventDefault();
+                processUserMessage(); 
+            }
+        }
+
+        // RAG 後端對接
+        async function processUserMessage() {
+            const inputField = document.getElementById('chat-input-field');
+            const userText = inputField.value.trim();
+            if (!userText) return; 
+
+            const chatBox = document.getElementById('chat-box');
+            const userBubble = document.createElement('div');
+            userBubble.className = 'msg-bubble msg-user';
+            userBubble.innerText = userText;
+            chatBox.appendChild(userBubble);
+            
+            inputField.value = "";
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            const thinkingIndicator = document.getElementById('robot-thinking');
+            thinkingIndicator.style.display = 'block';
+            
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: userText })
+                });
+                
+                const data = await response.json();
+                
+                thinkingIndicator.style.display = 'none';
+                const botBubble = document.createElement('div');
+                botBubble.className = 'msg-bubble msg-bot';
+                botBubble.innerText = data.reply || "收到了！但我現在稍微迷路了，請再說一次。";
+                
+                chatBox.appendChild(botBubble);
+                chatBox.scrollTop = chatBox.scrollHeight;
+
+            } catch (error) {
+                console.error("API 呼叫失敗:", error);
+                thinkingIndicator.style.display = 'none';
+                const botBubble = document.createElement('div');
+                botBubble.className = 'msg-bubble msg-bot';
+                botBubble.innerText = "網路連線有點狀況，請確認網路連線後再試一次喔！";
+                
+                chatBox.appendChild(botBubble);
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            navigateToScreen('screen-login');
+        });
+    </script>
+</body>
+</html>
