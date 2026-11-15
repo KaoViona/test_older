@@ -58,7 +58,7 @@ def query_rag_response(user_query: str) -> str:
 
         # 5. Gemini 生成
         response = client.models.generate_content(
-            model="gemini-3.8-flash",
+            model="gemini-2.0-flash",
             contents=prompt,
             config=types.GenerateContentConfig(
                 system_instruction=system_instruction,
